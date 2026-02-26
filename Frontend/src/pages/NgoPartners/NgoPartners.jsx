@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import axios from "axios";
+import React, { useState, useRef } from "react";
+import api from "../../utils/api";
 import { Users, Globe, Target, Handshake } from "lucide-react";
 import "./NgoPartners.css";
 
@@ -50,7 +50,7 @@ export default function NgoPartners() {
     setOtpLoading(true);
     setOtpMessage("");
     try {
-      const res = await axios.post("http://localhost:5000/api/partner/send-otp", {
+      const res = await api.post("/api/partner/send-otp", {
         email: formData.email,
         type: "ngo"
       });
@@ -71,7 +71,7 @@ export default function NgoPartners() {
     setOtpLoading(true);
     setOtpMessage("");
     try {
-      const res = await axios.post("http://localhost:5000/api/partner/verify-otp", {
+      const res = await api.post("/api/partner/verify-otp", {
         email: formData.email,
         otp: otp
       });
@@ -92,7 +92,7 @@ export default function NgoPartners() {
     }
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5000/api/partner/ngo", formData);
+      const res = await api.post("/api/partner/ngo", formData);
       alert(res.data.message);
       setSubmitted(true);
       setFormData({

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api, { ML_API_URL } from "../../utils/api";
 import axios from "axios";
 import "./Recipient.css";
 
@@ -50,7 +51,7 @@ const Recipient = () => {
 
     try {
       // Step 1: Query the Node Backend (MongoDB Atlas) for matched donors
-      const res = await axios.post("http://localhost:5000/api/donor/match", {
+      const res = await api.post("/api/donor/match", {
         HLA_A1: formData.HLA_A1,
         HLA_A2: formData.HLA_A2,
         HLA_B1: formData.HLA_B1,
@@ -78,7 +79,7 @@ const Recipient = () => {
 
         // Step 2: Call Flask ML API for suitability predictions
         try {
-          const mlRes = await axios.post("http://localhost:5001/ml-predict", {
+          const mlRes = await axios.post(`${ML_API_URL}/ml-predict`, {
             recipient: {
               bloodGroup: formData.bloodGroup,
               HLA_A1: formData.HLA_A1,

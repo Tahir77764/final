@@ -1,4 +1,6 @@
+import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import api from "../../utils/api";
 import "./DonorDetails.css";
 
 const DonorDetails = () => {
@@ -73,22 +75,18 @@ const DonorDetails = () => {
                         const user = JSON.parse(localStorage.getItem("user") || "{}");
 
                         try {
-                            const res = await fetch("http://localhost:5000/api/donor/contact", {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    donorId: donor._id,
-                                    recipientName: recipient.name || user.username || "Anonymous Patient",
-                                    recipientEmail: user.email || "Not Provided",
-                                    recipientPhone: recipient.phone || "Not Provided",
-                                    recipientDetails: {
-                                        age: recipient.age || "N/A",
-                                        bloodGroup: recipient.bloodGroup || "N/A"
-                                    }
-                                })
+                            const res = await api.post("/api/donor/contact", {
+                                donorId: donor._id,
+                                recipientName: recipient.name || user.username || "Anonymous Patient",
+                                recipientEmail: user.email || "Not Provided",
+                                recipientPhone: recipient.phone || "Not Provided",
+                                recipientDetails: {
+                                    age: recipient.age || "N/A",
+                                    bloodGroup: recipient.bloodGroup || "N/A"
+                                }
                             });
 
-                            if (res.ok) {
+                            if (res.status === 200) {
                                 alert("Request sent to donor! They will receive an email with options to accept or decline.");
                             } else {
                                 alert("Failed to contact donor.");

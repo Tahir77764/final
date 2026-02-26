@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useRef, useEffect } from "react";
+import api from "../../utils/api";
 import "./Hospital.css";
 
 const defaultHospitals = [
@@ -88,7 +88,7 @@ const Hospital = () => {
   useEffect(() => {
     const fetchHospitals = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/partner/hospitals");
+        const res = await api.get("/api/partner/hospitals");
         setDbHospitals(res.data);
       } catch (err) {
         console.error("Failed to fetch hospitals:", err);
@@ -123,7 +123,7 @@ const Hospital = () => {
     setOtpLoading(true);
     setOtpMessage("");
     try {
-      const res = await axios.post("http://localhost:5000/api/partner/send-otp", {
+      const res = await api.post("/api/partner/send-otp", {
         email: formData.email,
         type: "hospital"
       });
@@ -144,7 +144,7 @@ const Hospital = () => {
     setOtpLoading(true);
     setOtpMessage("");
     try {
-      const res = await axios.post("http://localhost:5000/api/partner/verify-otp", {
+      const res = await api.post("/api/partner/verify-otp", {
         email: formData.email,
         otp: otp
       });
@@ -165,7 +165,7 @@ const Hospital = () => {
     }
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5000/api/partner/hospital", formData);
+      const res = await api.post("/api/partner/hospital", formData);
       alert(res.data.message);
       setSubmitted(true);
       setFormData({

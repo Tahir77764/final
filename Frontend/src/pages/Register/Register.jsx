@@ -1,5 +1,5 @@
-import { useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
+import api from "../../utils/api";
 import "./Register.css";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 
@@ -23,7 +23,7 @@ const Register = () => {
 
   const register = async () => {
     try {
-      await axios.post("http://localhost:5000/api/auth/register", {
+      await api.post("/api/auth/register", {
         username: formData.username,
         email: formData.email,
         password: formData.password,
@@ -40,7 +40,7 @@ const Register = () => {
 
   const verifyOtp = async () => {
     try {
-      await axios.post("http://localhost:5000/api/auth/verify-otp", {
+      await api.post("/api/auth/verify-otp", {
         email: formData.email,
         otp: formData.otp
       });

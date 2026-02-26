@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import api from "../../utils/api";
 import "./DonorForm.css";
 
 const DonorForm = () => {
@@ -66,7 +66,7 @@ const DonorForm = () => {
 
     try {
       // Direct Add - No OTP (User is already logged in & verified)
-      await axios.post("http://localhost:5000/api/donor/add", formData);
+      await api.post("/api/donor/add", formData);
       alert("✅ You are Eligible! Donor Registered Successfully.");
 
       // Clear Form (except email)
