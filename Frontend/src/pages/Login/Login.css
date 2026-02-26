@@ -1,0 +1,119 @@
+/* Background */
+.login-page {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0b1023;
+  padding: 20px;
+}
+
+/* Card */
+.login-card {
+  background: #0f1634;
+  width: 450px;
+  padding: 40px 35px;
+  border-radius: 18px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+}
+
+.login-card h2 {
+  font-size: 30px;
+}
+
+.subtitle {
+  color: #c7c7c7;
+  margin-bottom: 30px;
+}
+
+/* Input Label */
+label {
+  display: block;
+  text-align: left;
+  margin: 10px 0 6px;
+}
+
+/* Input Box */
+.input-box {
+  background: #192553;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  padding: 12px;
+  gap: 10px;
+}
+
+.input-box input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+}
+
+.icon {
+  font-size: 18px;
+}
+
+.toggle {
+  cursor: pointer;
+}
+
+/* Options Row */
+.options {
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0 25px;
+  font-size: 14px;
+}
+
+.options a {
+  text-decoration: none;
+  color: #ff4436;
+}
+
+/* Button */
+.login-button {
+  width: 100%;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  padding: 14px;
+  border-radius: 9999px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+  transition: all 0.3s ease;
+}
+
+.login-button:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+}
+
+/* Register Text */
+.register-text {
+  margin-top: 20px;
+  color: #c7c7c7;
+}
+
+.register-text span {
+  color: #ff493b;
+  cursor: pointer;
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 600px) {
+  .login-card {
+    width: 100%;
+    padding: 30px 20px;
+  }
+
+  .login-card h2 {
+    font-size: 24px;
+  }
+}

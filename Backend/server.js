@@ -1,0 +1,28 @@
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+
+const donorRoutes = require("./routes/donorRoutes");
+const authRoutes = require("./routes/authRoutes");
+const partnerRoutes = require("./routes/partnerRoutes");
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+// 🔥 CONNECT ONCE
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
+  .catch(err => console.error(err));
+
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/donor", donorRoutes);
+app.use("/api/partner", partnerRoutes);
+
+const PORT = 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

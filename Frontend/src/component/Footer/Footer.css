@@ -1,0 +1,155 @@
+* {
+  box-sizing: border-box;
+}
+
+.footer {
+  background: linear-gradient(180deg, #060b2a, #04071c);
+  color: #fff;
+  padding: 60px 70px 30px;
+}
+
+/* TOP */
+.footer-top {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 50px;
+}
+
+/* LEFT */
+/* LEFT */
+.footer-logo {
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  font-size: 26px;
+  margin-bottom: 15px;
+  background: linear-gradient(to right, #4ade80, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: transform 0.3s ease;
+  display: inline-block;
+  cursor: default;
+}
+
+.footer-logo:hover {
+  transform: scale(1.05);
+}
+
+.footer-text {
+  color: #cfd3ff;
+  line-height: 1.7;
+  margin-bottom: 15px;
+}
+
+.footer-location {
+  color: #aab0ff;
+}
+
+/* MIDDLE */
+.footer-col h3 {
+  margin-bottom: 20px;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.footer-links button {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  color: #fff;
+  padding: 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.footer-links button:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+}
+
+/* RIGHT */
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contact-box {
+  background: #1b2457;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+/* DIVIDER */
+.footer-divider {
+  border: none;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 40px 0 25px;
+}
+
+/* BOTTOM */
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-bottom span {
+  color: #cfd3ff;
+}
+
+.footer-policies {
+  display: flex;
+  gap: 15px;
+}
+
+.footer-policies button {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 9999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.footer-policies button:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 1024px) {
+  .footer {
+    padding: 50px 40px 25px;
+  }
+
+  .footer-top {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .footer-links {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

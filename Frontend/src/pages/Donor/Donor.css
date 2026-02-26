@@ -1,0 +1,112 @@
+.donor {
+  background: linear-gradient(180deg, #060b2a, #0a1240);
+  color: #fff;
+}
+
+/* HERO */
+.donor-hero {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.donor-hero h1 {
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+}
+
+.donor-hero p {
+  max-width: 700px;
+  font-size: 1.2rem;
+  color: #d0d4ff;
+}
+
+/* WHY */
+.donor-why {
+  padding: 80px 60px;
+  text-align: center;
+}
+
+.donor-why h2 {
+  font-size: 2.4rem;
+  margin-bottom: 50px;
+}
+
+.donor-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.donor-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  padding: 35px 25px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+
+.donor-card span {
+  font-size: 36px;
+  color: #ff4d3d;
+}
+
+.donor-card h3 {
+  margin: 20px 0 10px;
+}
+
+.donor-card p {
+  color: #cfd3ff;
+  line-height: 1.6;
+}
+
+/* CTA */
+.donor-cta {
+  background: #0b1235;
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.donor-cta h2 {
+  font-size: 2.3rem;
+  margin-bottom: 25px;
+}
+
+.donor-cta button {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  color: #fff;
+  padding: 16px 40px;
+  font-size: 1.1rem;
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+.donor-cta button:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 1024px) {
+  .donor-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .donor-hero h1 {
+    font-size: 2.4rem;
+  }
+
+  .donor-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .donor-why {
+    padding: 60px 20px;
+  }
+}

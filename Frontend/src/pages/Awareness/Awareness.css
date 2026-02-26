@@ -1,0 +1,107 @@
+/* ---------- BASE (ALL DEVICES) ---------- */
+
+* {
+  box-sizing: border-box;
+}
+
+.awareness-container {
+  min-height: 100vh;
+  padding: 80px 16px 40px;
+  background: radial-gradient(circle at top, #0b1c4d, #050b2c, #02051a);
+  color: #ffffff;
+}
+
+.awareness-hero {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto 40px;
+}
+
+.awareness-hero h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.awareness-hero p {
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  color: #cfd6ff;
+}
+
+/* ---------- VIDEO SECTION ---------- */
+
+.video-section {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* RESPONSIVE VIDEO (KEY PART) */
+.video-wrapper {
+  width: 100%;
+  position: relative;
+  padding-top: 56.25%; /* 16:9 ratio */
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ---------- TEXT ---------- */
+
+.awareness-text {
+  text-align: center;
+}
+
+.awareness-text h2 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  margin-bottom: 12px;
+}
+
+.awareness-text p {
+  font-size: clamp(0.95rem, 3vw, 1.05rem);
+  line-height: 1.6;
+  color: #dbe1ff;
+}
+
+/* ---------- TABLET (≥768px) ---------- */
+
+@media (min-width: 768px) {
+  .awareness-text {
+    text-align: left;
+  }
+}
+
+/* ---------- DESKTOP (≥900px) ---------- */
+
+@media (min-width: 900px) {
+  .video-section {
+    flex-direction: row;
+    align-items: center;
+    gap: 48px;
+  }
+
+  .video-wrapper {
+    flex: 1;
+  }
+
+  .awareness-text {
+    flex: 1;
+  }
+}
+
+/* ---------- LARGE SCREENS (≥1200px) ---------- */
+
+@media (min-width: 1200px) {
+  .awareness-container {
+    padding-left: 80px;
+    padding-right: 80px;
+  }
+}
