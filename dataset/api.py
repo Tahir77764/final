@@ -291,12 +291,14 @@ def model_info():
 # RUN SERVER
 # ============================================================
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5001))
     print("\n" + "=" * 50)
-    print("🚀 Starting Flask ML Server on port 5001...")
+    print(f"🚀 Starting Flask ML Server on port {port}...")
     print("=" * 50)
     print("   Endpoints:")
     print("   POST /predict      — Rule-based matching")
     print("   POST /ml-predict   — ML-powered prediction")
     print("   GET  /model-info   — Model metadata")
     print("=" * 50 + "\n")
-    app.run(port=5001, debug=True)
+    # In production, gunicorn handles the run. This is for local dev.
+    app.run(host='0.0.0.0', port=port, debug=False)
