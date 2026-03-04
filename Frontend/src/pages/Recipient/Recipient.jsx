@@ -50,20 +50,25 @@ const Recipient = () => {
     setHasSearched(true);
 
     try {
+      // Normalize HLA values (uppercase, trim, remove colons/spaces)
+      const normalize = (val) => val ? val.toString().trim().replace(/[\s:]/g, "").toUpperCase() : "";
+
+      const normalizedData = {
+        ...formData,
+        HLA_A1: normalize(formData.HLA_A1),
+        HLA_A2: normalize(formData.HLA_A2),
+        HLA_B1: normalize(formData.HLA_B1),
+        HLA_B2: normalize(formData.HLA_B2),
+        HLA_C1: normalize(formData.HLA_C1),
+        HLA_C2: normalize(formData.HLA_C2),
+        HLA_DRB1_1: normalize(formData.HLA_DRB1_1),
+        HLA_DRB1_2: normalize(formData.HLA_DRB1_2),
+        HLA_DQ1: normalize(formData.HLA_DQ1),
+        HLA_DQ2: normalize(formData.HLA_DQ2),
+      };
+
       // Step 1: Query the Node Backend (MongoDB Atlas) for matched donors
-      const res = await api.post("/api/donor/match", {
-        HLA_A1: formData.HLA_A1,
-        HLA_A2: formData.HLA_A2,
-        HLA_B1: formData.HLA_B1,
-        HLA_B2: formData.HLA_B2,
-        HLA_C1: formData.HLA_C1,
-        HLA_C2: formData.HLA_C2,
-        HLA_DRB1_1: formData.HLA_DRB1_1,
-        HLA_DRB1_2: formData.HLA_DRB1_2,
-        HLA_DQ1: formData.HLA_DQ1,
-        HLA_DQ2: formData.HLA_DQ2,
-        bloodGroup: formData.bloodGroup,
-      });
+      const res = await api.post("/api/donor/match", normalizedData);
 
       console.log("Backend Response:", res.data);
 
@@ -82,19 +87,19 @@ const Recipient = () => {
           const mlRes = await axios.post(`${ML_API_URL}/ml-predict`, {
             recipient: {
               bloodGroup: formData.bloodGroup,
-              HLA_A1: formData.HLA_A1,
-              HLA_A2: formData.HLA_A2,
-              HLA_B1: formData.HLA_B1,
-              HLA_B2: formData.HLA_B2,
+              HLA_A1: normalizedData.HLA_A1,
+              HLA_A2: normalizedData.HLA_A2,
+              HLA_B1: normalizedData.HLA_B1,
+              HLA_B2: normalizedData.HLA_B2,
               age: formData.age
             },
             donors: mappedDonors.map(d => ({
               _id: d._id,
               bloodGroup: d.bloodGroup,
-              HLA_A1: d.HLA_A1,
-              HLA_A2: d.HLA_A2,
-              HLA_B1: d.HLA_B1,
-              HLA_B2: d.HLA_B2,
+              HLA_A1: normalize(d.HLA_A1),
+              HLA_A2: normalize(d.HLA_A2),
+              HLA_B1: normalize(d.HLA_B1),
+              HLA_B2: normalize(d.HLA_B2),
               age: d.age,
               weight: d.weight || 65
             }))

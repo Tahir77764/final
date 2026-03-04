@@ -127,32 +127,48 @@ router.get("/requests", verifyToken, async (req, res) => {
 router.post("/match", async (req, res) => {
   try {
     const { bloodGroup, HLA_A1, HLA_A2, HLA_B1, HLA_B2, HLA_C1, HLA_C2, HLA_DRB1_1, HLA_DRB1_2, HLA_DQ1, HLA_DQ2 } = req.body;
-    const donors = await Donor.find({ bloodGroup });
+
+    // 1. Fetch ALL donors of the requested blood group
+    // We add a cleanup for the bloodGroup string just in case
+    const targetBloodGroup = bloodGroup ? bloodGroup.trim() : "";
+    const donors = await Donor.find({ bloodGroup: targetBloodGroup });
 
     if (!donors.length) return res.json([]);
 
+    // 2. Helper to normalize and compare types (ignore colons/spaces)
+    const normalize = (val) => val ? val.toString().trim().replace(/[\s:]/g, "").toUpperCase() : "";
+
+    const userHLA = {
+      HLA_A1, HLA_A2, HLA_B1, HLA_B2, HLA_C1, HLA_C2, HLA_DRB1_1, HLA_DRB1_2, HLA_DQ1, HLA_DQ2
+    };
+
+    // 3. Score donors based on matches
     const scoredDonors = donors.map(donor => {
       let matchScore = 0;
-      if (donor.HLA_A1 && donor.HLA_A1 === HLA_A1) matchScore++;
-      if (donor.HLA_A2 && donor.HLA_A2 === HLA_A2) matchScore++;
-      if (donor.HLA_B1 && donor.HLA_B1 === HLA_B1) matchScore++;
-      if (donor.HLA_B2 && donor.HLA_B2 === HLA_B2) matchScore++;
-      if (donor.HLA_C1 && donor.HLA_C1 === HLA_C1) matchScore++;
-      if (donor.HLA_C2 && donor.HLA_C2 === HLA_C2) matchScore++;
-      if (donor.HLA_DRB1_1 && donor.HLA_DRB1_1 === HLA_DRB1_1) matchScore++;
-      if (donor.HLA_DRB1_2 && donor.HLA_DRB1_2 === HLA_DRB1_2) matchScore++;
-      if (donor.HLA_DQ1 && donor.HLA_DQ1 === HLA_DQ1) matchScore++;
-      if (donor.HLA_DQ2 && donor.HLA_DQ2 === HLA_DQ2) matchScore++;
+
+      // Compare each locus provided in req.body with the donor's record
+      Object.keys(userHLA).forEach(locus => {
+        const userValue = normalize(userHLA[locus]);
+        const donorValue = normalize(donor[locus]);
+
+        if (userValue && userValue === donorValue) {
+          matchScore++;
+        }
+      });
+
       return { ...donor.toObject(), matchScore };
     });
 
+    // 4. Return results sorted by matchScore
     const results = scoredDonors
-      .filter(d => d.matchScore > 0)
-      .sort((a, b) => b.matchScore - a.matchScore);
+      .filter(d => d.matchScore > 0) // Only show donors with at least 1 HLA match
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, 50); // Limit to top 50 to avoid overwhelming the frontend
 
     res.json(results);
 
   } catch (error) {
+    console.error("Match Error:", error);
     res.status(500).json({ error: error.message });
   }
 });

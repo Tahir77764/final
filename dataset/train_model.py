@@ -34,34 +34,40 @@ warnings.filterwarnings('ignore')
 # 1. LOAD THE DONOR DATASET
 # ============================
 print("=" * 60)
-print("🧬 BONE MARROW DONOR — ML MODEL TRAINING")
+print("BONE MARROW DONOR - ML MODEL TRAINING")
 print("=" * 60)
 
 csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                        "bone_marrow_donor_2000_dataset_column_E_removed (1).csv")
+                        "synthetic_bone_marrow_donors_500.csv")
 df = pd.read_csv(csv_path)
 df.columns = df.columns.str.strip().str.replace(" ", "_")
 
 # Rename columns to standard names
 rename_map = {
-    'donor_age': 'Age',
-    'donor_gender': 'Gender',
-    'donor_blood_group': 'Blood_Group',
-    'donor_name': 'Name',
-    'donor_mobile_number': 'Mobile',
-    'donor_email': 'Email',
-    'donor_weight': 'Weight',
-    'HLA_A1_type': 'HLA_A1',
-    'HLA_A2_type': 'HLA_A2',
-    'HLA_B1_type': 'HLA_B1',
-    'HLA_B2_type': 'HLA_B2'
+    'age': 'Age',
+    'gender': 'Gender',
+    'blood_group': 'Blood_Group',
+    'name': 'Name',
+    'phone': 'Mobile',
+    'email': 'Email',
+    'weight': 'Weight',
+    'HLA_A1': 'HLA_A1',
+    'HLA_A2': 'HLA_A2',
+    'HLA_B1': 'HLA_B1',
+    'HLA_B2': 'HLA_B2'
 }
 df = df.rename(columns=rename_map)
+
+# Handle missing Weight column
+if 'Weight' not in df.columns:
+    print("WARNING: Weight column missing. Generating random weights...")
+    df['Weight'] = np.random.randint(50, 100, size=len(df))
+
 df['Age'] = df['Age'].astype(int)
 df['Weight'] = df['Weight'].astype(int)
 
-print(f"\n📊 Loaded {len(df)} donor records from CSV")
-print(f"📋 Columns: {list(df.columns)}")
+print(f"\nLoaded {len(df)} donor records from CSV")
+print(f"Columns: {list(df.columns)}")
 
 
 # ============================
@@ -84,7 +90,7 @@ blood_groups = df['Blood_Group'].unique().tolist()
 training_pairs = []
 
 NUM_SAMPLES = 10000
-print(f"\n⚙️  Generating {NUM_SAMPLES} synthetic donor-recipient training pairs...")
+print(f"\nGenerating {NUM_SAMPLES} synthetic donor-recipient training pairs...")
 
 for i in range(NUM_SAMPLES):
     # Pick a random donor from the dataset
@@ -158,8 +164,8 @@ for i in range(NUM_SAMPLES):
 
 train_df = pd.DataFrame(training_pairs)
 
-print(f"✅ Generated {len(train_df)} training pairs\n")
-print("📊 Label Distribution:")
+print(f"Generated {len(train_df)} training pairs\n")
+print("Label Distribution:")
 for lbl, cnt in train_df['label'].value_counts().items():
     pct = cnt / len(train_df) * 100
     print(f"   {lbl:>6s}: {cnt:>5d}  ({pct:.1f}%)")
@@ -194,8 +200,8 @@ X_train, X_test, y_train, y_test = train_test_split(
     test_size=0.2, random_state=42, stratify=y_encoded
 )
 
-print(f"\n📐 Training set: {len(X_train)}  |  Test set: {len(X_test)}")
-print(f"🏷️  Label classes: {list(le.classes_)}")
+print(f"\nTraining set: {len(X_train)}  |  Test set: {len(X_test)}")
+print(f"Label classes: {list(le.classes_)}")
 
 
 # ============================
@@ -215,13 +221,13 @@ best_accuracy = 0
 best_name = ""
 
 print("\n" + "=" * 60)
-print("🏋️  TRAINING ALL 3 MODELS")
+print("TRAINING ALL 3 MODELS")
 print("=" * 60)
 
 for name, model in models.items():
-    print(f"\n{'─' * 50}")
-    print(f"🔄 Training: {name}")
-    print(f"{'─' * 50}")
+    print(f"\n{'-' * 50}")
+    print(f"Training: {name}")
+    print(f"{'-' * 50}")
 
     # Train
     model.fit(X_train, y_train)
@@ -240,8 +246,8 @@ for name, model in models.items():
         'model':     model
     }
 
-    print(f"\n   ✅ Test Accuracy:        {accuracy:.4f}  ({accuracy*100:.1f}%)")
-    print(f"   📊 Cross-Val Accuracy:  {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
+    print(f"\n   Test Accuracy:        {accuracy:.4f}  ({accuracy*100:.1f}%)")
+    print(f"   Cross-Val Accuracy:  {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
     print(f"\n   Classification Report:")
     report = classification_report(y_test, y_pred,
                                    target_names=le.classes_)
@@ -260,11 +266,11 @@ rf_model = results['Random Forest']['model']
 importances = rf_model.feature_importances_
 
 print("\n" + "=" * 60)
-print("📊 FEATURE IMPORTANCE (Random Forest)")
+print("FEATURE IMPORTANCE (Random Forest)")
 print("=" * 60)
 for feat, imp in sorted(zip(FEATURE_COLS, importances),
                         key=lambda x: x[1], reverse=True):
-    bar = "█" * int(imp * 40)
+    bar = "#" * int(imp * 40)
     print(f"   {feat:<22s}  {imp:.4f}  {bar}")
 
 
@@ -272,7 +278,7 @@ for feat, imp in sorted(zip(FEATURE_COLS, importances),
 # 6. SAVE BEST MODEL
 # ============================
 print("\n" + "=" * 60)
-print(f"🏆 BEST MODEL: {best_name}")
+print(f"BEST MODEL: {best_name}")
 print(f"   Accuracy: {best_accuracy:.4f}  ({best_accuracy*100:.1f}%)")
 print("=" * 60)
 
@@ -294,20 +300,20 @@ model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 with open(model_path, 'wb') as f:
     pickle.dump(model_data, f)
 
-print(f"\n💾 Model saved to: {model_path}")
+print(f"\nModel saved to: {model_path}")
 
 
 # ============================
 # 7. COMPARISON SUMMARY
 # ============================
 print("\n" + "=" * 60)
-print("📊 FINAL MODEL COMPARISON")
+print("FINAL MODEL COMPARISON")
 print("=" * 60)
 print(f"   {'Model':<35s}  {'Accuracy':>8s}  {'CV Mean':>8s}")
-print(f"   {'─'*35}  {'─'*8}  {'─'*8}")
+print(f"   {'-'*35}  {'-'*8}  {'-'*8}")
 for name, res in results.items():
-    marker = " 🏆" if name == best_name else "   "
+    marker = "  *" if name == best_name else "   "
     print(f" {marker} {name:<33s}  {res['accuracy']:>7.4f}  {res['cv_mean']:>7.4f}")
 
-print("\n✅ Training complete! Model is ready for predictions.")
+print("\nTraining complete! Model is ready for predictions.")
 print("   Run 'python api.py' to start the ML prediction server.\n")

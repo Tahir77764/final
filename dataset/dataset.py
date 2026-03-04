@@ -19,7 +19,7 @@ st.write("Find suitable donors based on **HLA Type, Age, and Blood Group**")
 # ----------------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv("bone_marrow_donor_2000_dataset_column_E_removed (1).csv")
+    df = pd.read_csv("synthetic_bone_marrow_donors_500.csv")
     df.columns = df.columns.str.strip().str.replace(" ", "_")
 
     # Add HLA if missing

@@ -26,28 +26,31 @@ CORS(app)
 # ----------------------------------
 def load_data():
     csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            "bone_marrow_donor_2000_dataset_column_E_removed (1).csv")
+                            "synthetic_bone_marrow_donors_500.csv")
     if not os.path.exists(csv_path):
-        print(f"⚠️  Dataset not found at {csv_path}")
+        print(f"Dataset not found at {csv_path}")
         return pd.DataFrame()
 
     df = pd.read_csv(csv_path)
     df.columns = df.columns.str.strip().str.replace(" ", "_")
 
     rename_map = {
-        'donor_age': 'Age',
-        'donor_gender': 'Gender',
-        'donor_blood_group': 'Blood_Group',
-        'donor_name': 'Name',
-        'donor_mobile_number': 'Mobile',
-        'donor_email': 'Email',
-        'donor_weight': 'Weight',
-        'HLA_A1_type': 'HLA_A1',
-        'HLA_A2_type': 'HLA_A2',
-        'HLA_B1_type': 'HLA_B1',
-        'HLA_B2_type': 'HLA_B2'
+        'age': 'Age',
+        'gender': 'Gender',
+        'blood_group': 'Blood_Group',
+        'name': 'Name',
+        'phone': 'Mobile',
+        'email': 'Email',
+        'weight': 'Weight',
+        'HLA_A1': 'HLA_A1',
+        'HLA_A2': 'HLA_A2',
+        'HLA_B1': 'HLA_B1',
+        'HLA_B2': 'HLA_B2'
     }
     df = df.rename(columns=rename_map)
+
+    if 'Weight' not in df.columns:
+        df['Weight'] = 70  # Default weight if missing
 
     if 'Age' in df.columns:
         df = df.dropna(subset=['Age'])
@@ -59,7 +62,7 @@ def load_data():
     if "Donor_ID" not in df.columns:
         df["Donor_ID"] = [f"D{i}" for i in range(len(df))]
 
-    print(f"📊 CSV Data Loaded: {len(df)} donors")
+    print(f"CSV Data Loaded: {len(df)} donors")
     return df
 
 
@@ -70,13 +73,13 @@ def load_ml_model():
     model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'ml_model.pkl')
     if not os.path.exists(model_path):
-        print("⚠️  ML model not found! Run 'python train_model.py' first.")
+        print("ML model not found! Run 'python train_model.py' first.")
         return None
 
     with open(model_path, 'rb') as f:
         model_data = pickle.load(f)
 
-    print(f"🤖 ML Model Loaded: {model_data['model_name']}")
+    print(f"ML Model Loaded: {model_data['model_name']}")
     print(f"   Accuracy: {model_data['accuracy']:.4f}")
     return model_data
 
@@ -293,7 +296,7 @@ def model_info():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
     print("\n" + "=" * 50)
-    print(f"🚀 Starting Flask ML Server on port {port}...")
+    print(f"Starting Flask ML Server on port {port}...")
     print("=" * 50)
     print("   Endpoints:")
     print("   POST /predict      — Rule-based matching")
