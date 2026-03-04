@@ -201,7 +201,11 @@ router.post("/contact", async (req, res) => {
 
   } catch (error) {
     console.error("Contact Error:", error);
-    res.status(500).json({ error: "Failed to process request" });
+    res.status(500).json({
+      error: "Failed to process request",
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
