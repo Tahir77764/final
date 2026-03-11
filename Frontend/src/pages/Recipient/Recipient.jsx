@@ -95,6 +95,12 @@ const Recipient = () => {
               HLA_A2: normalizedData.HLA_A2,
               HLA_B1: normalizedData.HLA_B1,
               HLA_B2: normalizedData.HLA_B2,
+              HLA_C1: normalizedData.HLA_C1,
+              HLA_C2: normalizedData.HLA_C2,
+              HLA_DRB1_1: normalizedData.HLA_DRB1_1,
+              HLA_DRB1_2: normalizedData.HLA_DRB1_2,
+              HLA_DQ1: normalizedData.HLA_DQ1,
+              HLA_DQ2: normalizedData.HLA_DQ2,
               age: formData.age
             },
             donors: mappedDonors.map(d => ({
@@ -104,6 +110,12 @@ const Recipient = () => {
               HLA_A2: normalize(d.HLA_A2),
               HLA_B1: normalize(d.HLA_B1),
               HLA_B2: normalize(d.HLA_B2),
+              HLA_C1: normalize(d.HLA_C1),
+              HLA_C2: normalize(d.HLA_C2),
+              HLA_DRB1_1: normalize(d.HLA_DRB1_1),
+              HLA_DRB1_2: normalize(d.HLA_DRB1_2),
+              HLA_DQ1: normalize(d.HLA_DQ1),
+              HLA_DQ2: normalize(d.HLA_DQ2),
               age: d.age,
               weight: d.weight || 65
             }))
@@ -363,7 +375,7 @@ const Recipient = () => {
                     <p className="prob-title">Match Probability:</p>
                     <div className="prob-bars">
                       {Object.entries(d.mlProbabilities)
-                        .sort((a, b) => b[1] - a[1])
+                        .filter(([label]) => label === d.mlSuitability)
                         .map(([label, pct]) => (
                           <div key={label} className="prob-row">
                             <span className="prob-label">{label}</span>

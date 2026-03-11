@@ -93,30 +93,31 @@ ml_model_data = load_ml_model()
 # ----------------------------------
 def compute_ml_features(recipient, donor):
     """
-    Compute the 8 features that the ML model expects
+    Compute the features that the ML model expects
     for a given recipient-donor pair.
+    Now includes 10 HLA loci.
     """
     # Blood group match
     rec_blood = recipient.get('bloodGroup', recipient.get('Blood_Group', ''))
     don_blood = donor.get('bloodGroup', donor.get('Blood_Group', ''))
     blood_match = 1 if rec_blood == don_blood else 0
 
-    # HLA matches (locus-specific)
-    rec_a1 = str(recipient.get('HLA_A1', ''))
-    rec_a2 = str(recipient.get('HLA_A2', ''))
-    rec_b1 = str(recipient.get('HLA_B1', ''))
-    rec_b2 = str(recipient.get('HLA_B2', ''))
-
-    don_a1 = str(donor.get('HLA_A1', ''))
-    don_a2 = str(donor.get('HLA_A2', ''))
-    don_b1 = str(donor.get('HLA_B1', ''))
-    don_b2 = str(donor.get('HLA_B2', ''))
-
-    hla_a1_match = 1 if rec_a1 and rec_a1 == don_a1 else 0
-    hla_a2_match = 1 if rec_a2 and rec_a2 == don_a2 else 0
-    hla_b1_match = 1 if rec_b1 and rec_b1 == don_b1 else 0
-    hla_b2_match = 1 if rec_b2 and rec_b2 == don_b2 else 0
-    total_hla = hla_a1_match + hla_a2_match + hla_b1_match + hla_b2_match
+    # HLA matches (10 loci)
+    hla_loci = [
+        'HLA_A1', 'HLA_A2', 'HLA_B1', 'HLA_B2',
+        'HLA_C1', 'HLA_C2', 'HLA_DRB1_1', 'HLA_DRB1_2',
+        'HLA_DQ1', 'HLA_DQ2'
+    ]
+    
+    hla_matches = []
+    total_hla = 0
+    
+    for locus in hla_loci:
+        rec_val = str(recipient.get(locus, '')).strip().replace(":", "").upper()
+        don_val = str(donor.get(locus, '')).strip().replace(":", "").upper()
+        match = 1 if rec_val and rec_val == don_val else 0
+        hla_matches.append(match)
+        total_hla += match
 
     # Age difference
     rec_age = int(recipient.get('age', recipient.get('Age', 30)))
@@ -126,9 +127,14 @@ def compute_ml_features(recipient, donor):
     # Donor weight
     weight = int(donor.get('weight', donor.get('Weight', 65)))
 
-    return [blood_match, hla_a1_match, hla_a2_match,
-            hla_b1_match, hla_b2_match, total_hla,
-            age_diff, weight]
+    # Return list of features
+    # Note: If the ML model was trained on 8 features, we still return those for the model,
+    # but we will use the total_hla for the new deterministic probability logic.
+    return {
+        'features': [blood_match] + hla_matches[:4] + [total_hla, age_diff, weight],
+        'total_hla': total_hla,
+        'blood_match': blood_match
+    }
 
 
 # ============================================================
@@ -232,31 +238,51 @@ def ml_predict():
 
         for donor in donors:
             # Compute features
-            features = compute_ml_features(recipient, donor)
-            features_array = np.array([features])
+            comp_data = compute_ml_features(recipient, donor)
+            features = comp_data['features']
+            total_hla = comp_data['total_hla']
+            
+            # DEFAULT ML PREDICTION (Fallback)
+            try:
+                features_array = np.array([features])
+                features_scaled = scaler.transform(features_array)
+                pred_class = model.predict(features_scaled)[0]
+                pred_label = le.inverse_transform([pred_class])[0]
+                pred_proba = model.predict_proba(features_scaled)[0]
+                confidence = round(float(max(pred_proba)) * 100, 1)
+                
+                class_probs = {
+                    le.inverse_transform([i])[0]: round(float(p) * 100, 1)
+                    for i, p in enumerate(pred_proba)
+                }
+            except Exception as ml_err:
+                print(f"ML Fallback error: {ml_err}")
+                pred_label = "Low"
+                confidence = 0
+                class_probs = {"High": 0, "Medium": 0, "Low": 100}
 
-            # Scale features
-            features_scaled = scaler.transform(features_array)
+            # OVERRIDE WITH USER'S SPECIFIC HLA RULES
+            # Mapping: 7-10 -> High, 4-6 -> Medium, 0-3 -> Low
+            # Percentage is always total_hla * 10
+            
+            if total_hla >= 7:
+                suitability = "High"
+            elif total_hla >= 4:
+                suitability = "Medium"
+            else:
+                suitability = "Low"
+            
+            confidence = total_hla * 10
 
-            # Predict class
-            pred_class = model.predict(features_scaled)[0]
-            pred_label = le.inverse_transform([pred_class])[0]
-
-            # Predict probabilities
-            pred_proba = model.predict_proba(features_scaled)[0]
-            class_probs = {
-                le.inverse_transform([i])[0]: round(float(p) * 100, 1)
-                for i, p in enumerate(pred_proba)
-            }
-
-            # Get confidence (probability of predicted class)
-            confidence = round(float(max(pred_proba)) * 100, 1)
+            # UI Requirement: Only show the relevant category
+            class_probs = {suitability: float(confidence)}
 
             predictions.append({
                 'donor_id':     donor.get('_id', donor.get('Donor_ID', '')),
-                'suitability':  pred_label,
-                'confidence':   confidence,
-                'probabilities': class_probs
+                'suitability':  suitability,
+                'confidence':   float(confidence),
+                'probabilities': class_probs,
+                'match_count':  total_hla # Extra info
             })
 
         return jsonify(predictions)

@@ -82,9 +82,14 @@ print(f"Columns: {list(df.columns)}")
 np.random.seed(42)
 
 # Collect all unique HLA values for each locus
+hla_loci = ['HLA_A1', 'HLA_A2', 'HLA_B1', 'HLA_B2', 'HLA_C1', 'HLA_C2', 'HLA_DRB1_1', 'HLA_DRB1_2', 'HLA_DQ1', 'HLA_DQ2']
 hla_values = {}
-for col in ['HLA_A1', 'HLA_A2', 'HLA_B1', 'HLA_B2']:
-    hla_values[col] = df[col].unique().tolist()
+for col in hla_loci:
+    if col in df.columns:
+        hla_values[col] = df[col].unique().tolist()
+    else:
+        # Generate synthetic values if column missing in basic CSV
+        hla_values[col] = [f"{np.random.randint(1, 99):02d}:{np.random.randint(1, 99):02d}" for _ in range(20)]
 
 blood_groups = df['Blood_Group'].unique().tolist()
 training_pairs = []
@@ -96,71 +101,62 @@ for i in range(NUM_SAMPLES):
     # Pick a random donor from the dataset
     donor = df.sample(1).iloc[0]
 
-    # Decide what kind of pair to create (balanced classes)
-    match_level = np.random.choice(['high', 'medium', 'low'],
-                                   p=[0.30, 0.35, 0.35])
-
-    if match_level == 'high':
-        # HIGH: same blood group + most HLAs match
-        rec_blood = donor['Blood_Group']
-        rec_hla_a1 = donor['HLA_A1'] if np.random.random() > 0.15 else np.random.choice(hla_values['HLA_A1'])
-        rec_hla_a2 = donor['HLA_A2'] if np.random.random() > 0.15 else np.random.choice(hla_values['HLA_A2'])
-        rec_hla_b1 = donor['HLA_B1'] if np.random.random() > 0.15 else np.random.choice(hla_values['HLA_B1'])
-        rec_hla_b2 = donor['HLA_B2'] if np.random.random() > 0.25 else np.random.choice(hla_values['HLA_B2'])
-        rec_age = donor['Age'] + np.random.randint(-5, 6)
-
-    elif match_level == 'medium':
-        # MEDIUM: same blood group + some HLAs match
-        rec_blood = donor['Blood_Group']
-        rec_hla_a1 = donor['HLA_A1'] if np.random.random() > 0.55 else np.random.choice(hla_values['HLA_A1'])
-        rec_hla_a2 = np.random.choice(hla_values['HLA_A2'])
-        rec_hla_b1 = donor['HLA_B1'] if np.random.random() > 0.55 else np.random.choice(hla_values['HLA_B1'])
-        rec_hla_b2 = np.random.choice(hla_values['HLA_B2'])
-        rec_age = donor['Age'] + np.random.randint(-15, 16)
-
-    else:
-        # LOW: different blood group or no HLA matches
-        if np.random.random() > 0.5:
-            rec_blood = np.random.choice(
-                [bg for bg in blood_groups if bg != donor['Blood_Group']]
-            )
+    # Randomly decide number of HLA matches (0 to 10)
+    target_hla_matches = np.random.randint(0, 11)
+    
+    rec_data = {'Blood_Group': donor['Blood_Group']}
+    
+    # Decide if blood matches (90% chance for training variety)
+    if np.random.random() > 0.9:
+        rec_data['Blood_Group'] = np.random.choice([bg for bg in blood_groups if bg != donor['Blood_Group']])
+    
+    # Select WHICH loci will match
+    matching_loci = np.random.choice(hla_loci, target_hla_matches, replace=False)
+    
+    # For training the model, we can still use A1, A2, B1, B2 specifically
+    # but the user's logic is based on the TOTAL match count.
+    hla_matches_dict = {}
+    total_hla = 0
+    for locus in hla_loci:
+        if locus in matching_loci:
+            rec_val = donor.get(locus, hla_values[locus][0])
+            hla_matches_dict[locus + "_match"] = 1
+            total_hla += 1
         else:
-            rec_blood = donor['Blood_Group']
-        rec_hla_a1 = np.random.choice(hla_values['HLA_A1'])
-        rec_hla_a2 = np.random.choice(hla_values['HLA_A2'])
-        rec_hla_b1 = np.random.choice(hla_values['HLA_B1'])
-        rec_hla_b2 = np.random.choice(hla_values['HLA_B2'])
-        rec_age = np.random.randint(1, 80)
+            donor_val = donor.get(locus, "")
+            options = [v for v in hla_values[locus] if str(v) != str(donor_val)]
+            rec_val = np.random.choice(options) if options else "99:99"
+            hla_matches_dict[locus + "_match"] = 0
 
     # ---- Compute Features ----
-    blood_match = 1 if rec_blood == donor['Blood_Group'] else 0
-    hla_a1_match = 1 if str(rec_hla_a1) == str(donor['HLA_A1']) else 0
-    hla_a2_match = 1 if str(rec_hla_a2) == str(donor['HLA_A2']) else 0
-    hla_b1_match = 1 if str(rec_hla_b1) == str(donor['HLA_B1']) else 0
-    hla_b2_match = 1 if str(rec_hla_b2) == str(donor['HLA_B2']) else 0
-    total_hla = hla_a1_match + hla_a2_match + hla_b1_match + hla_b2_match
-    age_diff = abs(int(rec_age) - int(donor['Age']))
+    blood_match = 1 if rec_data['Blood_Group'] == donor['Blood_Group'] else 0
+    age_diff = abs(np.random.randint(18, 70) - int(donor['Age']))
     weight = int(donor['Weight'])
 
-    # ---- Determine Label (medical criteria) ----
-    if blood_match == 1 and total_hla >= 3:
+    # ---- Determine Label (matching user's request) ----
+    if total_hla >= 7:
         label = "High"
-    elif blood_match == 1 and total_hla >= 1:
+    elif total_hla >= 4:
         label = "Medium"
     else:
         label = "Low"
 
-    training_pairs.append({
+    training_pair = {
         'blood_match':      blood_match,
-        'hla_a1_match':     hla_a1_match,
-        'hla_a2_match':     hla_a2_match,
-        'hla_b1_match':     hla_b1_match,
-        'hla_b2_match':     hla_b2_match,
         'total_hla_matches': total_hla,
         'age_difference':   age_diff,
         'donor_weight':     weight,
         'label':            label
+    }
+    # Add individual locus matches for the first 4 (to keep FEATURE_COLS similar if possible)
+    training_pair.update({
+        'hla_a1_match': hla_matches_dict['HLA_A1_match'],
+        'hla_a2_match': hla_matches_dict['HLA_A2_match'],
+        'hla_b1_match': hla_matches_dict['HLA_B1_match'],
+        'hla_b2_match': hla_matches_dict['HLA_B2_match']
     })
+    
+    training_pairs.append(training_pair)
 
 train_df = pd.DataFrame(training_pairs)
 
