@@ -733,7 +733,7 @@ export default function App() {
     const [loading, setLoading] = useState(true);
     const [selectedMessage, setSelectedMessage] = useState(null);
 
-    const API_BASE_URL = "http://localhost:5000";
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
     // Fetch messages from backend
     useEffect(() => {
@@ -783,7 +783,7 @@ export default function App() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    hospitalName: "HealthFirst Hospital", // Hardcoded for this demo
+                    hospitalName: "HealthFirst Hospital",
                     recipientName: msg.name,
                     donorName: "General Inquiry",
                     message: msg.message,
