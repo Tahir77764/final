@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Donor = require("../models/Donor");
@@ -206,6 +207,142 @@ router.post("/contact", async (req, res) => {
       details: error.message,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
+  }
+});
+
+// NEW: Hospital Direct Match (No email request)
+router.post("/hospital-match", async (req, res) => {
+  try {
+    const { donorId, recipientDetails, recipientName, recipientEmail, recipientPhone, hospitalId, hospitalName } = req.body;
+
+    const donor = await Donor.findById(donorId);
+    if (!donor) return res.status(404).json({ error: "Donor not found" });
+
+    // 1. Create a Match entry directly
+    const newMatch = new Match({
+        requestId: new mongoose.Types.ObjectId(),
+        donorId: donor._id,
+        donorName: donor.name || donor.Name || "Anonymous Donor",
+        donorEmail: donor.email || donor.Email || "",
+        donorPhone: donor.phone || donor.Mobile || "",
+        donorBloodGroup: donor.bloodGroup || donor.Blood_Group || "",
+        recipientName: recipientName || "Anonymous Patient",
+        recipientEmail: recipientEmail || "Not Provided",
+        recipientPhone: recipientPhone || "Not Provided",
+        recipientDetails,
+        status: "Matched"
+    });
+    await newMatch.save();
+
+    // Calculate HLA match details for the notification
+    const normalize = (val) => val ? val.toString().trim().replace(/[\s:]/g, "").toUpperCase() : "";
+    const hlaLoci = ["HLA_A1", "HLA_A2", "HLA_B1", "HLA_B2", "HLA_C1", "HLA_C2", "HLA_DRB1_1", "HLA_DRB1_2", "HLA_DQ1", "HLA_DQ2"];
+    let matchCount = 0;
+    let matchedLoci = [];
+
+    hlaLoci.forEach(locus => {
+      const recipientVal = normalize(recipientDetails[locus]);
+      const donorVal = normalize(donor[locus]);
+      if (recipientVal && recipientVal === donorVal) {
+        matchCount++;
+        matchedLoci.push(locus.replace("HLA_", ""));
+      }
+    });
+
+    const hlaDetails = matchCount > 0 ? `${matchCount}/10 HLA Matches: ${matchedLoci.join(", ")}` : "Match recorded";
+
+    // 2. Create a Message entry for the hospital inbox
+    const Message = require("../models/Message");
+    const newMessage = new Message({
+        hospitalId: hospitalId || "",
+        hospitalName: hospitalName || "Partner Hospital",
+        recipientName: recipientName || "Anonymous Patient",
+        donorName: donor.name || donor.Name || "Anonymous Donor",
+        donorDetails: {
+            email: donor.email || donor.Email || "",
+            phone: donor.phone || donor.Mobile || "",
+            bloodGroup: donor.bloodGroup || donor.Blood_Group || "",
+            age: parseInt(donor.age || donor.Age) || 0
+        },
+        recipientDetails: recipientDetails,
+        message: `Direct match confirmed for patient ${recipientName}. Score: ${hlaDetails}. Donor: ${donor.name || donor.Name || 'Anonymous'} (${donor.bloodGroup || donor.Blood_Group || 'N/A'})`,
+        status: "Unread"
+    });
+    await newMessage.save();
+
+    res.json({ message: "Direct match recorded successfully", matchId: newMatch._id });
+
+  } catch (error) {
+    console.error("Hospital Match Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// NEW: NGO Direct Match (For NGO's Inbox)
+router.post("/ngo-match", async (req, res) => {
+  try {
+    const { donorId, recipientDetails, recipientName, recipientEmail, recipientPhone, ngoId, ngoName } = req.body;
+
+    const donor = await Donor.findById(donorId);
+    if (!donor) return res.status(404).json({ error: "Donor not found" });
+
+    // 1. Create a Match entry directly
+    const newMatch = new Match({
+        requestId: new mongoose.Types.ObjectId(),
+        donorId: donor._id,
+        donorName: donor.name || donor.Name || "Anonymous Donor",
+        donorEmail: donor.email || donor.Email || "",
+        donorPhone: donor.phone || donor.Mobile || "",
+        donorBloodGroup: donor.bloodGroup || donor.Blood_Group || "",
+        recipientName: recipientName || "Anonymous Patient",
+        recipientEmail: recipientEmail || "Not Provided",
+        recipientPhone: recipientPhone || "Not Provided",
+        recipientDetails,
+        status: "Matched"
+    });
+    await newMatch.save();
+
+    // Calculate HLA match details
+    const normalize = (val) => val ? val.toString().trim().replace(/[\s:]/g, "").toUpperCase() : "";
+    const hlaLoci = ["HLA_A1", "HLA_A2", "HLA_B1", "HLA_B2", "HLA_C1", "HLA_C2", "HLA_DRB1_1", "HLA_DRB1_2", "HLA_DQ1", "HLA_DQ2"];
+    let matchCount = 0;
+    let matchedLoci = [];
+
+    hlaLoci.forEach(locus => {
+      const recipientVal = normalize(recipientDetails[locus]);
+      const donorVal = normalize(donor[locus]);
+      if (recipientVal && recipientVal === donorVal) {
+        matchCount++;
+        matchedLoci.push(locus.replace("HLA_", ""));
+      }
+    });
+
+    const hlaDetails = matchCount > 0 ? `${matchCount}/10 HLA Matches: ${matchedLoci.join(", ")}` : "Match recorded";
+
+    // 2. Create a Message entry for the NGO's inbox
+    const Message = require("../models/Message");
+    const newMessage = new Message({
+        hospitalId: ngoId || "", // Reuse hospitalId field for NGO ID to keep schema simple
+        hospitalName: ngoName || "NGO Partner",
+        recipientName: recipientName || "Anonymous Patient",
+        donorName: donor.name || donor.Name || "Anonymous Donor",
+        donorDetails: {
+            email: donor.email || donor.Email || "",
+            phone: donor.phone || donor.Mobile || "",
+            bloodGroup: donor.bloodGroup || donor.Blood_Group || "",
+            age: parseInt(donor.age || donor.Age) || 0
+        },
+        recipientDetails: recipientDetails,
+        message: `New Compatibility Match Found! ${hlaDetails}. Matching initiated for patient ${recipientName}.`,
+        status: "Unread"
+    });
+    await newMessage.save();
+
+    res.json({ message: "NGO match recorded successfully", matchId: newMatch._id });
+
+  } catch (error) {
+    console.error("NGO Match Error:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 

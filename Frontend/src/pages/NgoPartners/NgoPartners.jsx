@@ -1,10 +1,14 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import { Users, Globe, Target, Handshake } from "lucide-react";
 import "./NgoPartners.css";
 
 export default function NgoPartners() {
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
+  const [ngos, setNgos] = useState([]);
+  const [loadingNgos, setLoadingNgos] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const formRef = useRef(null);
@@ -30,6 +34,29 @@ export default function NgoPartners() {
     website: "",
     message: "",
   });
+
+  const featuredPartners = [
+    { name: "DKMS Foundation", id: "default_dkms", sub: "International Donor Registry", desc: "World's largest bone marrow donor center fighting blood cancer globally." },
+    { name: "Gift of Life", id: "default_giftoflife", sub: "Donor Recruitment", desc: "Saving lives through stem cell and bone marrow transplants." },
+    { name: "Be The Match", id: "default_bethematch", sub: "Patient Support", desc: "Connecting patients with donors and providing financial assistance." },
+    { name: "Marrow Donor Registry India", id: "default_mdri", sub: "Indian Registry", desc: "Building India's largest registry of potential stem cell donors." }
+  ];
+
+  // Fetch registered NGOs
+  useEffect(() => {
+    const fetchNgos = async () => {
+      setLoadingNgos(true);
+      try {
+        const res = await api.get("/api/partner/ngos");
+        setNgos(res.data);
+      } catch (err) {
+        console.error("Error fetching NGOs:", err);
+      } finally {
+        setLoadingNgos(false);
+      }
+    };
+    fetchNgos();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -158,34 +185,46 @@ export default function NgoPartners() {
         </div>
       </section>
 
-      {/* FEATURED PARTNERS */}
+      {/* NGO PARTNERS GRID */}
       <section className="featured">
-        <h2>Featured Partners</h2>
+        <h2>Our NGO Network</h2>
+        <p className="ngo-network-subtitle">Collaborating with global registries and local organizations to widen the donor pool.</p>
 
         <div className="partners-grid">
-          <div className="partner-card">
-            <h3>DKMS Foundation</h3>
-            <span>International Donor Registry</span>
-            <p>World's largest bone marrow donor center fighting blood cancer globally.</p>
-          </div>
+          {/* Featured Partners First */}
+          {featuredPartners.map(p => (
+            <div
+              key={p.id}
+              className="partner-card featured-badge"
+              onClick={() => navigate("/recipient", { state: { ngo: { ngoName: p.name, _id: p.id } } })}
+              style={{ cursor: "pointer" }}
+            >
+              <div className="card-badge">Featured</div>
+              <h3>{p.name}</h3>
+              <span>{p.sub}</span>
+              <p>{p.desc}</p>
+              <div className="card-action">Initiate Match →</div>
+            </div>
+          ))}
 
-          <div className="partner-card">
-            <h3>Gift of Life</h3>
-            <span>Donor Recruitment</span>
-            <p>Saving lives through stem cell and bone marrow transplants.</p>
-          </div>
-
-          <div className="partner-card">
-            <h3>Be The Match</h3>
-            <span>Patient Support</span>
-            <p>Connecting patients with donors and providing financial assistance.</p>
-          </div>
-
-          <div className="partner-card">
-            <h3>Marrow Donor Registry India</h3>
-            <span>Indian Registry</span>
-            <p>Building India's largest registry of potential stem cell donors.</p>
-          </div>
+          {/* Registered NGOs */}
+          {loadingNgos ? (
+            <div className="ngo-loader">Loading dynamic partners...</div>
+          ) : (
+            ngos.map(ngo => (
+              <div
+                key={ngo._id}
+                className="partner-card"
+                onClick={() => navigate("/recipient", { state: { ngo: { ngoName: ngo.ngoName, _id: ngo._id } } })}
+                style={{ cursor: "pointer" }}
+              >
+                <h3>{ngo.ngoName}</h3>
+                <span>{ngo.focusArea || "Registered Partner"}</span>
+                <p>{ngo.city}, {ngo.state}</p>
+                <div className="card-action">Initiate Match →</div>
+              </div>
+            ))
+          )}
         </div>
       </section>
 

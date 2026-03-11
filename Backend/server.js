@@ -6,6 +6,7 @@ const cors = require("cors");
 const donorRoutes = require("./routes/donorRoutes");
 const authRoutes = require("./routes/authRoutes");
 const partnerRoutes = require("./routes/partnerRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.get("/", (req, res) => res.send("API is running..."));
 app.use("/api/auth", authRoutes);
 app.use("/api/donor", donorRoutes);
 app.use("/api/partner", partnerRoutes);
+app.use("/api/messages", messageRoutes);
 
 // 🔥 USE DYNAMIC PORT FOR RENDER
 const PORT = process.env.PORT || 5000;

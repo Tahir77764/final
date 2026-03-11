@@ -6,7 +6,7 @@ import "./DonorDetails.css";
 const DonorDetails = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { donor } = location.state || {};
+    const { donor, hospital, ngo } = location.state || {};
 
     if (!donor) {
         return (
@@ -69,33 +69,111 @@ const DonorDetails = () => {
                 </div>
 
                 <div className="action-buttons">
-                    <button className="primary-btn" onClick={async () => {
-                        const recipientState = JSON.parse(sessionStorage.getItem("recipientSearchState") || "{}");
-                        const recipient = recipientState.formData || {};
-                        const user = JSON.parse(localStorage.getItem("user") || "{}");
+                    {hospital ? (
+                        <button className="primary-btn hospital-action-btn" onClick={async () => {
+                            const recipientState = JSON.parse(sessionStorage.getItem("recipientSearchState") || "{}");
+                            const recipient = recipientState.formData || {};
 
-                        try {
-                            const res = await api.post("/api/donor/contact", {
-                                donorId: donor._id,
-                                recipientName: recipient.name || user.username || "Anonymous Patient",
-                                recipientEmail: user.email || "Not Provided",
-                                recipientPhone: recipient.phone || "Not Provided",
-                                recipientDetails: {
-                                    age: recipient.age || "N/A",
-                                    bloodGroup: recipient.bloodGroup || "N/A"
+                            try {
+                                const res = await api.post("/api/donor/hospital-match", {
+                                    donorId: donor._id,
+                                    recipientName: recipient.name || "Anonymous Patient",
+                                    recipientEmail: recipient.email || "Not Provided",
+                                    recipientPhone: recipient.phone || "Not Provided",
+                                    recipientDetails: {
+                                        age: recipient.age || "N/A",
+                                        bloodGroup: recipient.bloodGroup || "N/A",
+                                        HLA_A1: recipient.HLA_A1,
+                                        HLA_A2: recipient.HLA_A2,
+                                        HLA_B1: recipient.HLA_B1,
+                                        HLA_B2: recipient.HLA_B2,
+                                        HLA_C1: recipient.HLA_C1,
+                                        HLA_C2: recipient.HLA_C2,
+                                        HLA_DRB1_1: recipient.HLA_DRB1_1,
+                                        HLA_DRB1_2: recipient.HLA_DRB1_2,
+                                        HLA_DQ1: recipient.HLA_DQ1,
+                                        HLA_DQ2: recipient.HLA_DQ2,
+                                    },
+                                    hospitalId: hospital._id,
+                                    hospitalName: hospital.hospitalName
+                                });
+
+                                if (res.status === 200) {
+                                    alert(`Success! Match confirmed and stored for ${hospital.hospitalName}.`);
+                                    navigate("/recipient");
                                 }
-                            });
-
-                            if (res.status === 200) {
-                                alert("Request sent to donor! They will receive an email with options to accept or decline.");
-                            } else {
-                                alert("Failed to contact donor.");
+                            } catch (err) {
+                                console.error(err);
+                                alert("Error storing hospital match.");
                             }
-                        } catch (err) {
-                            console.error(err);
-                            alert("Error sending request.");
-                        }
-                    }}>Request Contact (Save a Life)</button>
+                        }}>Confirm Match for {hospital.hospitalName}</button>
+                    ) : ngo ? (
+                        <button className="primary-btn ngo-action-btn" onClick={async () => {
+                            const recipientState = JSON.parse(sessionStorage.getItem("recipientSearchState") || "{}");
+                            const recipient = recipientState.formData || {};
+
+                            try {
+                                const res = await api.post("/api/donor/ngo-match", {
+                                    donorId: donor._id,
+                                    recipientName: recipient.name || "Anonymous Patient",
+                                    recipientEmail: recipient.email || "Not Provided",
+                                    recipientPhone: recipient.phone || "Not Provided",
+                                    recipientDetails: {
+                                        age: recipient.age || "N/A",
+                                        bloodGroup: recipient.bloodGroup || "N/A",
+                                        HLA_A1: recipient.HLA_A1,
+                                        HLA_A2: recipient.HLA_A2,
+                                        HLA_B1: recipient.HLA_B1,
+                                        HLA_B2: recipient.HLA_B2,
+                                        HLA_C1: recipient.HLA_C1,
+                                        HLA_C2: recipient.HLA_C2,
+                                        HLA_DRB1_1: recipient.HLA_DRB1_1,
+                                        HLA_DRB1_2: recipient.HLA_DRB1_2,
+                                        HLA_DQ1: recipient.HLA_DQ1,
+                                        HLA_DQ2: recipient.HLA_DQ2,
+                                    },
+                                    ngoId: ngo._id,
+                                    ngoName: ngo.ngoName
+                                });
+
+                                if (res.status === 200) {
+                                    alert(`Success! Match confirmed and stored for NGO: ${ngo.ngoName}.`);
+                                    navigate("/recipient");
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                alert("Error storing NGO match.");
+                            }
+                        }}>Confirm Match for NGO: {ngo.ngoName}</button>
+                    ) : (
+                        <button className="primary-btn" onClick={async () => {
+                            const recipientState = JSON.parse(sessionStorage.getItem("recipientSearchState") || "{}");
+                            const recipient = recipientState.formData || {};
+                            const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+                            try {
+                                const res = await api.post("/api/donor/contact", {
+                                    donorId: donor._id,
+                                    recipientName: recipient.name || user.username || "Anonymous Patient",
+                                    recipientEmail: user.email || "Not Provided",
+                                    recipientPhone: recipient.phone || "Not Provided",
+                                    recipientDetails: {
+                                        age: recipient.age || "N/A",
+                                        bloodGroup: recipient.bloodGroup || "N/A"
+                                    }
+                                });
+
+                                if (res.status === 200) {
+                                    alert("Request sent to donor! They will receive an email with options to accept or decline.");
+                                } else {
+                                    alert("Failed to contact donor.");
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                alert("Error sending request.");
+                            }
+                        }}>Request Contact (Save a Life)</button>
+                    )}
                 </div>
             </div>
         </div>

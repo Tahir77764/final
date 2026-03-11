@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import api, { ML_API_URL } from "../../utils/api";
 import axios from "axios";
 import "./Recipient.css";
 
 const Recipient = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const hospital = location.state?.hospital;
+  const ngo = location.state?.ngo;
+  
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -156,6 +160,12 @@ const Recipient = () => {
     <div className="recipient-page">
       <h1 className="title">Request for Stem Cell Donor</h1>
       <p className="subtitle">Enter Patient Details to Find a Match</p>
+      
+      {hospital && (
+        <div className="linked-hospital-badge">
+          🏥 Search request for: <strong>{hospital.hospitalName}</strong>
+        </div>
+      )}
 
       <form className="recipient-card" onSubmit={handleSubmit}>
         <h2>Patient Details</h2>
@@ -326,7 +336,7 @@ const Recipient = () => {
               <div
                 key={d._id || index}
                 className="donor-result-card"
-                onClick={() => navigate(`/donor-details/${d._id}`, { state: { donor: d } })}
+                onClick={() => navigate(`/donor-details/${d._id}`, { state: { donor: d, hospital, ngo } })}
                 style={{ cursor: "pointer" }}
               >
                 <h3>Donor #{index + 1}</h3>

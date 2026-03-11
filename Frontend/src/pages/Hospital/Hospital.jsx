@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import "./Hospital.css";
 
@@ -54,6 +55,7 @@ const defaultHospitals = [
 ];
 
 const Hospital = () => {
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -229,7 +231,12 @@ const Hospital = () => {
           <div className="loading-text">Loading hospitals...</div>
         ) : (
           allHospitals.map((item, index) => (
-            <div className={`hospital-card ${!item.isDefault ? "hospital-card-db" : ""}`} key={item._id || index}>
+            <div 
+              className={`hospital-card ${!item.isDefault ? "hospital-card-db" : ""}`} 
+              key={item._id || index}
+              onClick={() => navigate("/recipient", { state: { hospital: item } })}
+              style={{ cursor: "pointer" }}
+            >
               <div className="hospital-icon">🏥</div>
 
               {/* Facility Type Badge */}

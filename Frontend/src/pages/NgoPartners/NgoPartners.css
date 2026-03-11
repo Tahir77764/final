@@ -62,8 +62,24 @@
 
 .featured h2 {
   text-align: center;
-  font-size: 2.2rem;
-  margin-bottom: 50px;
+  font-size: 3rem;
+  margin-bottom: 12px;
+  background: linear-gradient(to right, #ffffff, #94a3b8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+}
+
+.ngo-network-subtitle {
+  text-align: center;
+  color: #94a3b8;
+  margin-bottom: 60px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  font-weight: 500;
+  line-height: 1.6;
 }
 
 .partners-grid {
@@ -73,31 +89,102 @@
 }
 
 .partner-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 14px;
-  padding: 30px;
-  transition: all 0.3s ease;
-  border: 1px solid transparent;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border-radius: 24px;
+  padding: 40px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.partner-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: transparent;
+  transition: background 0.3s;
 }
 
 .partner-card:hover {
-  transform: translateY(-5px);
-  border-color: #ff4d3d;
+  transform: translateY(-10px);
+  border-color: rgba(255, 77, 61, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
+}
+
+.partner-card:hover::before {
+  background: #ff4d3d;
+}
+
+.partner-card.featured-badge {
+  border-color: rgba(255, 77, 61, 0.2);
+}
+
+.card-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 77, 61, 0.15);
+  color: #ff4d3d;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid rgba(255, 77, 61, 0.2);
 }
 
 .partner-card h3 {
-  font-size: 1.4rem;
-  margin-bottom: 6px;
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+  font-weight: 800;
 }
 
 .partner-card span {
   color: #ff4d3d;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .partner-card p {
-  margin-top: 14px;
-  color: #b3b9d4;
+  margin-top: 20px;
+  color: #94a3b8;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.card-action {
+  margin-top: 30px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #ff4d3d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.partner-card:hover .card-action {
+  opacity: 1;
+}
+
+.ngo-loader {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: #64748b;
+  font-style: italic;
+  font-weight: 500;
 }
 
 
